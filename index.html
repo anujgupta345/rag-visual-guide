@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG — Complete Visual Guide with Expandable Component Details</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --muted: #7878a0;
+
+    --c1: #ff6b6b; /* Load - red */
+    --c2: #ffa94d; /* Split - orange */
+    --c3: #ffd43b; /* Embed - yellow */
+    --c4: #69db7c; /* Store - green */
+    --c5: #38d9f5; /* Retrieve - cyan */
+    --c6: #748ffc; /* Context - blue */
+    --c7: #da77f2; /* Prompt - purple */
+    --c8: #f783ac; /* Generate - pink */
+    --c9: #a9e34b; /* Parse - lime */
+    --cyan: #38d9f5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: .4;
+  }
+
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 80px 24px 60px;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(103,58,183,.18) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(56,217,245,.10) 0%, transparent 60%);
+    z-index: 0;
+  }
+  .hero-label {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--c5);
+    border: 1px solid var(--c5);
+    padding: 4px 16px;
+    border-radius: 999px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 7vw, 80px);
+    font-weight: 800;
+    line-height: 1.05;
+    position: relative;
+    z-index: 1;
+  }
+  .hero h1 span { color: var(--c5); }
+  .hero h1 em { font-style: normal; color: var(--c7); }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 620px;
+    margin: 20px auto 0;
+    position: relative;
+    z-index: 1;
+    font-weight: 300;
+  }
+
+  .section {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  @media(max-width:700px){ .intro-grid { grid-template-columns: 1fr; } }
+  .intro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .intro-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    color: var(--c5);
+  }
+  .pill-list { list-style: none; }
+  .pill-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #c8c8e0;
+  }
+  .pill-list li .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--c5);
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .flowchart-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 24px;
+    overflow-x: auto;
+    margin-bottom: 40px;
+  }
+  .flow-phase-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    min-width: 900px;
+  }
+  .flow-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform .2s;
+  }
+  .flow-node:hover { transform: translateY(-4px); }
+  .node-box {
+    width: 100px;
+    height: 80px;
+    border-radius: 14px;
+    border: 2px solid var(--node-color, #fff);
+    background: var(--node-bg, rgba(255,255,255,.05));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .node-icon { font-size: 24px; }
+  .node-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--node-color, #fff);
+    opacity: .7;
+  }
+  .node-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--node-color, #fff);
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--border);
+    margin: 0 4px;
+    margin-bottom: 24px;
+  }
+  .flow-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 30px 0;
+    position: relative;
+  }
+  .flow-divider span {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    background: var(--card);
+    padding: 4px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 24px;
+    margin-top: 40px;
+  }
+  .step-card {
+    background: var(--card);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: transform .2s, border-color .2s;
+  }
+  .step-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--step-color, #fff);
+  }
+  .step-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, var(--step-bg, rgba(255,255,255,.03)), transparent);
+  }
+  .step-badge {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--step-bg2, rgba(255,255,255,.1));
+    border: 2px solid var(--step-color, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .step-meta { flex: 1; }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--step-color, #fff);
+    opacity: .8;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--step-color, #fff);
+  }
+  .step-body { padding: 20px 24px; }
+  .step-desc {
+    font-size: 13.5px;
+    color: #b0b0c8;
+    margin-bottom: 16px;
+  }
+
+  .code-block {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    overflow-x: auto;
+    margin: 16px 0;
+    color: #c8c8e0;
+  }
+  .kw { color: #da77f2; }
+  .fn { color: #38d9f5; }
+  .str { color: #ffd43b; }
+  .cm { color: #505070; font-style: italic; }
+  .num { color: #ffa94d; }
+
+  .alt-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    margin-top: 12px;
+  }
+  .alt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    border: 1px solid var(--step-color, var(--c5));
+    color: var(--step-color, var(--c5));
+    background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chip:hover {
+    background: var(--step-color, var(--c5));
+    color: var(--bg);
+    transform: scale(1.02);
+  }
+
+  .expandable-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(56, 217, 245, 0.05);
+    border-radius: 12px;
+    margin-top: 0;
+    border-left: 3px solid var(--c5);
+  }
+  .expandable-detail.open {
+    max-height: 800px;
+    transition: max-height 0.55s ease-in-out;
+    margin-top: 16px;
+    padding: 16px 18px;
+    border: 1px solid rgba(56, 217, 245, 0.3);
+  }
+  .detail-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--c5);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .params-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .params-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .params-table td {
+    padding: 8px 8px;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    color: #c0c0dc;
+  }
+
+  .trace-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 40px;
+  }
+  .trace-header {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .trace-step {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .trace-num {
+    width: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    border-right: 1px solid var(--border);
+    background: rgba(255,255,255,.02);
+  }
+  .trace-content { padding: 16px 24px; flex: 1; }
+  .trace-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: #0d0d14;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .sim-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-top: 40px;
+  }
+  .sim-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .sim-text {
+    width: 200px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .sim-bar-wrap {
+    flex: 1;
+    height: 28px;
+    background: rgba(255,255,255,.04);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .sim-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .phase-index { background: rgba(255,107,107,.15); color: var(--c1); border: 1px solid var(--c1); }
+  .phase-query { background: rgba(56,217,245,.12); color: var(--c5); border: 1px solid var(--c5); }
+
+  .footer {
+    text-align: center;
+    padding: 40px 24px 60px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    border-top: 1px solid var(--border);
+  }
+
+  .animate { animation: fadeUp .6s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .delay-1 { animation-delay: .1s; }
+  .delay-2 { animation-delay: .2s; }
+  .delay-3 { animation-delay: .3s; }
+  .delay-4 { animation-delay: .4s; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <h1><span>RAG</span> — Retrieval-<br><em>Augmented</em> Generation</h1>
+</div>
+
+<!-- WHAT IS RAG -->
+<div class="section animate">
+  <div class="section-title">📚 What is RAG?</div>
+  <div class="intro-grid">
+    <div class="intro-card">
+      <h3>The Simple Analogy</h3>
+      <ul class="pill-list">
+        <li><span class="dot"></span>Think of RAG as giving an AI a textbook to read <em>before</em> answering your question.</li>
+        <li><span class="dot"></span>Instead of relying only on training data, you <strong>Retrieve</strong> relevant info first.</li>
+        <li><span class="dot"></span>Then you <strong>Augment</strong> the AI prompt with that info.</li>
+        <li><span class="dot"></span>Finally the AI <strong>Generates</strong> a grounded answer.</li>
+      </ul>
+    </div>
+    <div class="intro-card">
+      <h3>Why RAG Exists</h3>
+      <ul class="pill-list">
+        <li><span class="dot" style="background:var(--c1)"></span><strong>Knowledge cutoff</strong> — LLMs don't know recent events.</li>
+        <li><span class="dot" style="background:var(--c2)"></span><strong>Private data</strong> — LLMs don't know your company docs, emails, etc.</li>
+        <li><span class="dot" style="background:var(--c3)"></span><strong>Hallucination</strong> — LLMs make up facts when uncertain.</li>
+        <li><span class="dot" style="background:var(--c4)"></span>RAG solves all three by providing real context from your documents.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN FLOWCHART -->
+<div class="section animate delay-1">
+  <div class="section-title">🗺️ Complete RAG Architecture</div>
+  <div class="flowchart-wrap">
+    <div class="flow-phase-label">● INDEXING PHASE — Prepare your documents (done once)</div>
+    <div class="flow-row">
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c1);--node-bg:rgba(255,107,107,.08)"><span class="node-icon">📄</span><span class="node-num">STEP 01</span></div><span class="node-label" style="color:var(--c1)">LOAD</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c2);--node-bg:rgba(255,169,77,.08)"><span class="node-icon">✂️</span><span class="node-num">STEP 02</span></div><span class="node-label" style="color:var(--c2)">SPLIT</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c3);--node-bg:rgba(255,212,59,.08)"><span class="node-icon">🔢</span><span class="node-num">STEP 03</span></div><span class="node-label" style="color:var(--c3)">EMBED</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c4);--node-bg:rgba(105,219,124,.08)"><span class="node-icon">💾</span><span class="node-num">STEP 04</span></div><span class="node-label" style="color:var(--c4)">STORE</span></div>
+    </div>
+    <div class="flow-divider"><span>USER ASKS A QUESTION ↓</span></div>
+    <div class="flow-phase-label">● QUERY PHASE — Answer questions in real time</div>
+    <div class="flow-row">
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c5);--node-bg:rgba(56,217,245,.08)"><span class="node-icon">🔍</span><span class="node-num">STEP 05</span></div><span class="node-label" style="color:var(--c5)">RETRIEVE</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c6);--node-bg:rgba(116,143,252,.08)"><span class="node-icon">📋</span><span class="node-num">STEP 06</span></div><span class="node-label" style="color:var(--c6)">CONTEXT</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c7);--node-bg:rgba(218,119,242,.08)"><span class="node-icon">💬</span><span class="node-num">STEP 07</span></div><span class="node-label" style="color:var(--c7)">PROMPT</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c8);--node-bg:rgba(247,131,172,.08)"><span class="node-icon">🤖</span><span class="node-num">STEP 08</span></div><span class="node-label" style="color:var(--c8)">GENERATE</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="node-box" style="--node-color:var(--c9);--node-bg:rgba(169,227,75,.08)"><span class="node-icon">✅</span><span class="node-num">STEP 09</span></div><span class="node-label" style="color:var(--c9)">PARSE</span></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c1)"></div>Load</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c2)"></div>Split</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c3)"></div>Embed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c4)"></div>Store</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c5)"></div>Retrieve</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c6)"></div>Context</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c7)"></div>Prompt</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c8)"></div>Generate</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c9)"></div>Parse</div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP CARDS WITH EXPANDABLE CYAN CHIPS -->
+<div class="section animate delay-2">
+  <div class="section-title">🔬 Each Step — Deep Dive (Click Any Cyan Chip to Expand)</div>
+
+  <span class="phase-tag phase-index">Indexing Phase</span>
+  <div class="steps-grid">
+
+    <!-- STEP 1: LOADER -->
+    <div class="step-card" style="--step-color:var(--c1);--step-bg:rgba(255,107,107,.06);--step-bg2:rgba(255,107,107,.15);">
+      <div class="step-header"><div class="step-badge">📄</div><div class="step-meta"><div class="step-num">STEP 01</div><div class="step-title">Document Loader</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Reads files and converts to Document objects (page_content + metadata).</p>
+        <div class="code-block"><span class="kw">from</span> langchain.document_loaders <span class="kw">import</span> <span class="fn">TextLoader</span><br>loader = <span class="fn">TextLoader</span>(<span class="str">"sample.txt"</span>)<br>documents = loader.<span class="fn">load</span>()</div>
+        <div class="alt-title">Alternatives — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('loader-text-detail')">📄 TextLoader</div>
+          <div class="chip" onclick="toggleExpand('loader-pdf-detail')">📑 PyPDFLoader</div>
+          <div class="chip" onclick="toggleExpand('loader-csv-detail')">📊 CSVLoader</div>
+          <div class="chip" onclick="toggleExpand('loader-dir-detail')">🗂️ DirectoryLoader</div>
+          <div class="chip" onclick="toggleExpand('loader-web-detail')">🌐 WebBaseLoader</div>
+        </div>
+        <div id="loader-text-detail" class="expandable-detail"><div class="detail-title">📄 TextLoader — Full Details</div><div class="code-block">TextLoader(<br>    file_path=<span class="str">"file.txt"</span>,<br>    encoding=<span class="str">'utf-8'</span>,<br>    autodetect_encoding=<span class="kw">False</span><br>)<br><span class="cm"># Output: List[Document] with page_content and metadata{'source': file_path}</span></div></div>
+        <div id="loader-pdf-detail" class="expandable-detail"><div class="detail-title">📑 PyPDFLoader — Full Details</div><div class="code-block"><span class="kw">from</span> langchain.document_loaders <span class="kw">import</span> PyPDFLoader<br>loader = PyPDFLoader(<span class="str">"doc.pdf"</span>, password=<span class="str">"optional"</span>)<br>pages = loader.load()<br><span class="cm"># Each page becomes a separate Document</span><br><span class="cm"># Installation: pip install pypdf</span></div></div>
+        <div id="loader-csv-detail" class="expandable-detail"><div class="detail-title">📊 CSVLoader — Full Details</div><div class="code-block">loader = CSVLoader(<span class="str">"data.csv"</span>, metadata_columns=[<span class="str">"id"</span>, <span class="str">"date"</span>])<br>docs = loader.load()<br><span class="cm"># Each row becomes one Document</span></div></div>
+        <div id="loader-dir-detail" class="expandable-detail"><div class="detail-title">🗂️ DirectoryLoader — Full Details</div><div class="code-block">loader = DirectoryLoader(<span class="str">"./docs"</span>, glob=<span class="str">"**/*.txt"</span>, loader_cls=TextLoader)<br>all_docs = loader.load()<br><span class="cm"># Loads all matching files recursively</span></div></div>
+        <div id="loader-web-detail" class="expandable-detail"><div class="detail-title">🌐 WebBaseLoader — Full Details</div><div class="code-block">loader = WebBaseLoader(<span class="str">"https://example.com"</span>)<br>docs = loader.load()<br><span class="cm"># Installation: pip install beautifulsoup4</span></div></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: SPLITTER -->
+    <div class="step-card" style="--step-color:var(--c2);--step-bg:rgba(255,169,77,.06);--step-bg2:rgba(255,169,77,.15);">
+      <div class="step-header"><div class="step-badge">✂️</div><div class="step-meta"><div class="step-num">STEP 02</div><div class="step-title">Text Splitter</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Breaks documents into smaller chunks. chunk_size and chunk_overlap are critical.</p>
+        <div class="code-block">splitter = <span class="fn">RecursiveCharacterTextSplitter</span>(chunk_size=<span class="num">500</span>, chunk_overlap=<span class="num">50</span>)<br>chunks = splitter.<span class="fn">split_documents</span>(documents)</div>
+        <div class="alt-title">Alternatives — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('split-recursive-detail')">🔄 RecursiveCharacter</div>
+          <div class="chip" onclick="toggleExpand('split-token-detail')">🎯 TokenTextSplitter</div>
+          <div class="chip" onclick="toggleExpand('split-markdown-detail')">📝 MarkdownHeader</div>
+          <div class="chip" onclick="toggleExpand('split-semantic-detail')">🧠 SemanticChunker</div>
+        </div>
+        <div id="split-recursive-detail" class="expandable-detail"><div class="detail-title">🔄 RecursiveCharacterTextSplitter</div><div class="code-block">RecursiveCharacterTextSplitter(<br>    chunk_size=<span class="num">500</span>, chunk_overlap=<span class="num">50</span>,<br>    separators=[<span class="str">"\n\n"</span>, <span class="str">"\n"</span>, <span class="str">" "</span>, <span class="str">""</span>]<br>)<br><span class="cm"># Tries separators in order, falls back as needed</span></div></div>
+        <div id="split-token-detail" class="expandable-detail"><div class="detail-title">🎯 TokenTextSplitter</div><div class="code-block">splitter = TokenTextSplitter(<br>    chunk_size=<span class="num">100</span>, chunk_overlap=<span class="num">10</span>,<br>    encoding_name=<span class="str">"cl100k_base"</span><br>)<br><span class="cm"># Splits by tokens (what LLMs count)</span><br><span class="cm"># pip install tiktoken</span></div></div>
+        <div id="split-markdown-detail" class="expandable-detail"><div class="detail-title">📝 MarkdownHeaderTextSplitter</div><div class="code-block">splitter = MarkdownHeaderTextSplitter(<br>    headers_to_split_on=[(<span class="str">"#"</span>, <span class="str">"Header1"</span>), (<span class="str">"##"</span>, <span class="str">"Header2"</span>)]<br>)<br>sections = splitter.split_text(markdown_text)</div></div>
+        <div id="split-semantic-detail" class="expandable-detail"><div class="detail-title">🧠 SemanticChunker</div><div class="code-block">splitter = SemanticChunker(<br>    embeddings, <br>    breakpoint_threshold_type=<span class="str">"percentile"</span><br>)<br><span class="cm"># Uses embeddings to find natural break points</span></div></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: EMBEDDINGS -->
+    <div class="step-card" style="--step-color:var(--c3);--step-bg:rgba(255,212,59,.06);--step-bg2:rgba(255,212,59,.15);">
+      <div class="step-header"><div class="step-badge">🔢</div><div class="step-meta"><div class="step-num">STEP 03</div><div class="step-title">Embedding Model</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Converts text to vectors. Similar texts → similar vectors (cosine similarity).</p>
+        <div class="code-block">embeddings = <span class="fn">OpenAIEmbeddings</span>(model=<span class="str">"text-embedding-ada-002"</span>)<br>vectors = embeddings.<span class="fn">embed_documents</span>(texts)</div>
+        <div class="alt-title">Alternatives — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('embed-openai-detail')">🤖 OpenAIEmbeddings</div>
+          <div class="chip" onclick="toggleExpand('embed-hf-detail')">🤗 HuggingFaceEmbeddings</div>
+          <div class="chip" onclick="toggleExpand('embed-cohere-detail')">🔷 CohereEmbeddings</div>
+          <div class="chip" onclick="toggleExpand('embed-ollama-detail')">🦙 Ollama (local)</div>
+        </div>
+        <div id="embed-openai-detail" class="expandable-detail"><div class="detail-title">🤖 OpenAIEmbeddings</div><div class="code-block">embeddings = OpenAIEmbeddings(<br>    model=<span class="str">"text-embedding-ada-002"</span>,  <span class="cm"># 1536 dims</span><br>    openai_api_key=<span class="str">"sk-..."</span><br>)<br><span class="cm"># Options: text-embedding-3-small (1536), text-embedding-3-large (3072)</span></div></div>
+        <div id="embed-hf-detail" class="expandable-detail"><div class="detail-title">🤗 HuggingFaceEmbeddings</div><div class="code-block">embeddings = HuggingFaceEmbeddings(<br>    model_name=<span class="str">"sentence-transformers/all-MiniLM-L6-v2"</span>,<br>    model_kwargs={<span class="str">"device"</span>: <span class="str">"cpu"</span>}<br>)<br><span class="cm"># Free, runs locally, 384 dimensions</span></div></div>
+        <div id="embed-cohere-detail" class="expandable-detail"><div class="detail-title">🔷 CohereEmbeddings</div><div class="code-block">embeddings = CohereEmbeddings(<br>    model=<span class="str">"embed-english-v3.0"</span>,  <span class="cm"># 1024 dims</span><br>    cohere_api_key=<span class="str">"..."</span><br>)</div></div>
+        <div id="embed-ollama-detail" class="expandable-detail"><div class="detail-title">🦙 Ollama (Local)</div><div class="code-block"><span class="kw">from</span> langchain.embeddings <span class="kw">import</span> OllamaEmbeddings<br>embeddings = OllamaEmbeddings(model=<span class="str">"nomic-embed-text"</span>)<br><span class="cm"># Requires Ollama running locally</span></div></div>
+      </div>
+    </div>
+
+    <!-- STEP 4: VECTOR STORE -->
+    <div class="step-card" style="--step-color:var(--c4);--step-bg:rgba(105,219,124,.06);--step-bg2:rgba(105,219,124,.15);">
+      <div class="step-header"><div class="step-badge">💾</div><div class="step-meta"><div class="step-num">STEP 04</div><div class="step-title">Vector Store</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Stores vectors + chunk references for fast similarity search.</p>
+        <div class="code-block">vectorstore = <span class="fn">FAISS</span>.<span class="fn">from_documents</span>(chunks, embeddings)</div>
+        <div class="alt-title">Alternatives — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('store-faiss-detail')">⚡ FAISS (in-memory)</div>
+          <div class="chip" onclick="toggleExpand('store-chroma-detail')">💿 Chroma (persistent)</div>
+          <div class="chip" onclick="toggleExpand('store-pinecone-detail')">☁️ Pinecone (cloud)</div>
+          <div class="chip" onclick="toggleExpand('store-weaviate-detail')">🔍 Weaviate</div>
+          <div class="chip" onclick="toggleExpand('store-qdrant-detail')">🚀 QDrant</div>
+        </div>
+        <div id="store-faiss-detail" class="expandable-detail"><div class="detail-title">⚡ FAISS</div><div class="code-block">vectorstore = FAISS.from_documents(chunks, embeddings)<br>vectorstore.save_local(<span class="str">"./faiss_index"</span>)<br>loaded = FAISS.load_local(<span class="str">"./faiss_index"</span>, embeddings)<br><span class="cm"># In-memory, extremely fast</span></div></div>
+        <div id="store-chroma-detail" class="expandable-detail"><div class="detail-title">💿 Chroma</div><div class="code-block">vectorstore = Chroma.from_documents(<br>    documents=chunks, embedding=embeddings,<br>    persist_directory=<span class="str">"./chroma_db"</span><br>)<br>vectorstore.persist()<br><span class="cm"># Persistent on disk</span></div></div>
+        <div id="store-pinecone-detail" class="expandable-detail"><div class="detail-title">☁️ Pinecone</div><div class="code-block"><span class="kw">import</span> pinecone<br>pinecone.init(api_key=<span class="str">"..."</span>, environment=<span class="str">"us-west1-gcp"</span>)<br>vectorstore = Pinecone.from_documents(<br>    documents=chunks, embedding=embeddings,<br>    index_name=<span class="str">"my-index"</span><br>)<br><span class="cm"># Managed cloud, scalable</span></div></div>
+        <div id="store-weaviate-detail" class="expandable-detail"><div class="detail-title">🔍 Weaviate</div><div class="code-block">client = weaviate.Client(<span class="str">"http://localhost:8080"</span>)<br>vectorstore = Weaviate.from_documents(<br>    documents=chunks, embedding=embeddings,<br>    client=client, index_name=<span class="str">"Document"</span><br>)<br><span class="cm"># GraphQL API, hybrid search</span></div></div>
+        <div id="store-qdrant-detail" class="expandable-detail"><div class="detail-title">🚀 QDrant</div><div class="code-block">client = QdrantClient(host=<span class="str">"localhost"</span>, port=<span class="num">6333</span>)<br>vectorstore = Qdrant.from_documents(<br>    documents=chunks, embedding=embeddings,<br>    client=client, collection_name=<span class="str">"docs"</span><br>)<br><span class="cm"># Rust-based, high performance</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <span class="phase-tag phase-query" style="margin-top: 40px; display: inline-block;">Query Phase</span>
+  <div class="steps-grid">
+
+    <!-- STEP 5: RETRIEVER -->
+    <div class="step-card" style="--step-color:var(--c5);--step-bg:rgba(56,217,245,.06);--step-bg2:rgba(56,217,245,.15);">
+      <div class="step-header"><div class="step-badge">🔍</div><div class="step-meta"><div class="step-num">STEP 05</div><div class="step-title">Retriever</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Finds top-k most similar chunks to the user's query.</p>
+        <div class="code-block">retriever = vectorstore.<span class="fn">as_retriever</span>(search_kwargs={<span class="str">"k"</span>: <span class="num">3</span>})<br>docs = retriever.<span class="fn">get_relevant_documents</span>(query)</div>
+        <div class="alt-title">Search Types — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('retrieve-sim-detail')">📊 similarity</div>
+          <div class="chip" onclick="toggleExpand('retrieve-mmr-detail')">🎲 mmr (diverse)</div>
+          <div class="chip" onclick="toggleExpand('retrieve-thresh-detail')">🎯 score_threshold</div>
+        </div>
+        <div id="retrieve-sim-detail" class="expandable-detail"><div class="detail-title">📊 Similarity Search</div><div class="code-block">retriever = vectorstore.as_retriever(<br>    search_type=<span class="str">"similarity"</span>,<br>    search_kwargs={<span class="str">"k"</span>: <span class="num">4</span>}<br>)<br><span class="cm"># Returns top-k most similar chunks</span></div></div>
+        <div id="retrieve-mmr-detail" class="expandable-detail"><div class="detail-title">🎲 MMR (Maximum Marginal Relevance)</div><div class="code-block">retriever = vectorstore.as_retriever(<br>    search_type=<span class="str">"mmr"</span>,<br>    search_kwargs={<span class="str">"k"</span>: <span class="num">4</span>, <span class="str">"fetch_k"</span>: <span class="num">20</span>, <span class="str">"lambda_mult"</span>: <span class="num">0.5</span>}<br>)<br><span class="cm"># Balances relevance with diversity</span></div></div>
+        <div id="retrieve-thresh-detail" class="expandable-detail"><div class="detail-title">🎯 Score Threshold</div><div class="code-block">retriever = vectorstore.as_retriever(<br>    search_type=<span class="str">"similarity_score_threshold"</span>,<br>    search_kwargs={<span class="str">"score_threshold"</span>: <span class="num">0.8</span>, <span class="str">"k"</span>: <span class="num">5</span>}<br>)</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 6: CONTEXT -->
+    <div class="step-card" style="--step-color:var(--c6);--step-bg:rgba(116,143,252,.06);--step-bg2:rgba(116,143,252,.15);">
+      <div class="step-header"><div class="step-badge">📋</div><div class="step-meta"><div class="step-num">STEP 06</div><div class="step-title">Context Preparation</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Joins retrieved chunks into a single context string.</p>
+        <div class="code-block">context = <span class="str">"\n\n---\n\n"</span>.<span class="fn">join</span>([doc.page_content <span class="kw">for</span> doc <span class="kw">in</span> docs])</div>
+        <div class="alt-title">Techniques — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('context-plain-detail')">📄 simple join</div>
+          <div class="chip" onclick="toggleExpand('context-source-detail')">📎 with source info</div>
+          <div class="chip" onclick="toggleExpand('context-score-detail')">📊 with scores</div>
+        </div>
+        <div id="context-plain-detail" class="expandable-detail"><div class="detail-title">📄 Simple Join</div><div class="code-block">context = <span class="str">"\n\n"</span>.join([doc.page_content <span class="kw">for</span> doc <span class="kw">in</span> docs])</div></div>
+        <div id="context-source-detail" class="expandable-detail"><div class="detail-title">📎 With Source Attribution</div><div class="code-block">parts = [<span class="str">f"[{doc.metadata.get('source','unknown')}]\n{doc.page_content}"</span> <span class="kw">for</span> doc <span class="kw">in</span> docs]<br>context = <span class="str">"\n\n"</span>.join(parts)</div></div>
+        <div id="context-score-detail" class="expandable-detail"><div class="detail-title">📊 With Similarity Scores</div><div class="code-block">parts = [<span class="str">f"[Score: {score:.3f}]\n{doc.page_content}"</span> <span class="kw">for</span> doc, score <span class="kw">in</span> zip(docs, scores)]<br>context = <span class="str">"\n\n"</span>.join(parts)</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 7: PROMPT TEMPLATE -->
+    <div class="step-card" style="--step-color:var(--c7);--step-bg:rgba(218,119,242,.06);--step-bg2:rgba(218,119,242,.15);">
+      <div class="step-header"><div class="step-badge">💬</div><div class="step-meta"><div class="step-num">STEP 07</div><div class="step-title">Prompt Template</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Structures the final instruction sent to the LLM.</p>
+        <div class="code-block">prompt = <span class="fn">PromptTemplate</span>(template=<span class="str">"Context: {context}\nQ: {question}\nA:"</span>, input_variables=[<span class="str">"context"</span>, <span class="str">"question"</span>])</div>
+        <div class="alt-title">Template Types — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('prompt-qa-detail')">❓ QA Template</div>
+          <div class="chip" onclick="toggleExpand('prompt-chat-detail')">💬 ChatPromptTemplate</div>
+          <div class="chip" onclick="toggleExpand('prompt-fewshot-detail')">📚 FewShotPromptTemplate</div>
+        </div>
+        <div id="prompt-qa-detail" class="expandable-detail"><div class="detail-title">❓ QA Template</div><div class="code-block">template = <span class="str">"""Answer based ONLY on context.<br><br>Context: {context}<br><br>Question: {question}<br><br>Answer:"""</span></div></div>
+        <div id="prompt-chat-detail" class="expandable-detail"><div class="detail-title">💬 ChatPromptTemplate</div><div class="code-block"><span class="kw">from</span> langchain.prompts <span class="kw">import</span> ChatPromptTemplate<br>prompt = ChatPromptTemplate.from_messages([<br>    (<span class="str">"system"</span>, <span class="str">"You are a helpful assistant."</span>),<br>    (<span class="str">"user"</span>, <span class="str">"Context: {context}\nQuestion: {question}"</span>)<br>])</div></div>
+        <div id="prompt-fewshot-detail" class="expandable-detail"><div class="detail-title">📚 FewShotPromptTemplate</div><div class="code-block"><span class="cm"># Provides examples of good Q&A pairs</span><br><span class="kw">from</span> langchain.prompts <span class="kw">import</span> FewShotPromptTemplate<br>examples = [{"context": "...", "question": "...", "answer": "..."}]</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 8: LLM -->
+    <div class="step-card" style="--step-color:var(--c8);--step-bg:rgba(247,131,172,.06);--step-bg2:rgba(247,131,172,.15);">
+      <div class="step-header"><div class="step-badge">🤖</div><div class="step-meta"><div class="step-num">STEP 08</div><div class="step-title">LLM Generation</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Sends prompt to LLM and generates grounded answer.</p>
+        <div class="code-block">llm = <span class="fn">ChatOpenAI</span>(model=<span class="str">"gpt-4"</span>, temperature=<span class="num">0</span>)<br>response = llm.<span class="fn">invoke</span>(prompt)</div>
+        <div class="alt-title">LLM Options — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('llm-openai-detail')">🤖 ChatOpenAI</div>
+          <div class="chip" onclick="toggleExpand('llm-anthropic-detail')">📘 ChatAnthropic</div>
+          <div class="chip" onclick="toggleExpand('llm-ollama-detail')">🦙 Ollama (local)</div>
+        </div>
+        <div id="llm-openai-detail" class="expandable-detail"><div class="detail-title">🤖 ChatOpenAI</div><div class="code-block">llm = ChatOpenAI(<br>    model=<span class="str">"gpt-4"</span>, temperature=<span class="num">0</span>, max_tokens=<span class="num">500</span><br>)<br><span class="cm"># Options: gpt-4, gpt-4-turbo, gpt-3.5-turbo</span></div></div>
+        <div id="llm-anthropic-detail" class="expandable-detail"><div class="detail-title">📘 ChatAnthropic (Claude)</div><div class="code-block"><span class="kw">from</span> langchain.chat_models <span class="kw">import</span> ChatAnthropic<br>llm = ChatAnthropic(<br>    model=<span class="str">"claude-3-sonnet-20240229"</span>, temperature=<span class="num">0</span><br>)<br><span class="cm"># Options: claude-3-opus, sonnet, haiku</span></div></div>
+        <div id="llm-ollama-detail" class="expandable-detail"><div class="detail-title">🦙 Ollama (Local)</div><div class="code-block"><span class="kw">from</span> langchain.llms <span class="kw">import</span> Ollama<br>llm = Ollama(model=<span class="str">"llama2"</span>, temperature=<span class="num">0</span>)<br><span class="cm"># Free, runs locally, no API key</span></div></div>
+      </div>
+    </div>
+
+    <!-- STEP 9: OUTPUT PARSER -->
+    <div class="step-card" style="--step-color:var(--c9);--step-bg:rgba(169,227,75,.06);--step-bg2:rgba(169,227,75,.15);">
+      <div class="step-header"><div class="step-badge">✅</div><div class="step-meta"><div class="step-num">STEP 09</div><div class="step-title">Output Parser</div></div></div>
+      <div class="step-body">
+        <p class="step-desc">Cleans/structures the raw LLM response.</p>
+        <div class="code-block">final = <span class="fn">StrOutputParser</span>().<span class="fn">parse</span>(response)</div>
+        <div class="alt-title">Parser Types — Click to Expand</div>
+        <div class="alt-chips">
+          <div class="chip" onclick="toggleExpand('parse-str-detail')">📝 StrOutputParser</div>
+          <div class="chip" onclick="toggleExpand('parse-json-detail')">📊 JsonOutputParser</div>
+          <div class="chip" onclick="toggleExpand('parse-pydantic-detail')">📦 PydanticOutputParser</div>
+          <div class="chip" onclick="toggleExpand('parse-list-detail')">📋 CommaSeparatedList</div>
+        </div>
+        <div id="parse-str-detail" class="expandable-detail"><div class="detail-title">📝 StrOutputParser</div><div class="code-block"><span class="kw">from</span> langchain.output_parsers <span class="kw">import</span> StrOutputParser<br>parser = StrOutputParser()<br>result = parser.parse(response)<br><span class="cm"># Returns cleaned string</span></div></div>
+        <div id="parse-json-detail" class="expandable-detail"><div class="detail-title">📊 JsonOutputParser</div><div class="code-block"><span class="kw">from</span> langchain.output_parsers <span class="kw">import</span> JsonOutputParser<br>parser = JsonOutputParser()<br>result = parser.parse(response.content)<br><span class="cm"># Parses JSON from LLM response</span></div></div>
+        <div id="parse-pydantic-detail" class="expandable-detail"><div class="detail-title">📦 PydanticOutputParser</div><div class="code-block"><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field<br><span class="kw">class</span> <span class="fn">Answer</span>(BaseModel):<br>    answer: str = Field(description=<span class="str">"The answer"</span>)<br>    sources: list[str] = Field(description=<span class="str">"Sources"</span>)<br>parser = PydanticOutputParser(pydantic_object=Answer)<br>result = parser.parse(response.content)</div></div>
+        <div id="parse-list-detail" class="expandable-detail"><div class="detail-title">📋 CommaSeparatedListOutputParser</div><div class="code-block"><span class="kw">from</span> langchain.output_parsers <span class="kw">import</span> CommaSeparatedListOutputParser<br>parser = CommaSeparatedListOutputParser()<br>result = parser.parse(<span class="str">"Python, Java, C++"</span>)<br><span class="cm"># Returns: ['Python', 'Java', 'C++']</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIMILARITY VISUAL -->
+<div class="section animate delay-3">
+  <div class="section-title">📐 How Similarity Search Works</div>
+  <div class="sim-wrap">
+    <div class="sim-title">Query: <span style="color:var(--c5);font-family:'JetBrains Mono',monospace;font-size:17px">"How to train a dog?"</span></div>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px">Each stored chunk is compared with the query vector using cosine similarity. Score closer to 1.0 = more relevant.</p>
+    <div class="sim-item"><div class="sim-text">"Puppies need training"</div><div class="sim-bar-wrap"><div class="sim-bar" style="width:92%;background:linear-gradient(90deg,var(--c4),var(--c5))">0.92 ✓ RETRIEVED</div></div></div>
+    <div class="sim-item"><div class="sim-text">"Dogs are loyal pets"</div><div class="sim-bar-wrap"><div class="sim-bar" style="width:78%;background:linear-gradient(90deg,var(--c3),var(--c4))">0.78 ✓ RETRIEVED</div></div></div>
+    <div class="sim-item"><div class="sim-text">"Python programming"</div><div class="sim-bar-wrap"><div class="sim-bar" style="width:22%;background:linear-gradient(90deg,var(--c1),var(--c2))">0.22 ✗ skipped</div></div></div>
+    <p style="color:var(--muted);font-size:12px;margin-top:20px;font-family:'JetBrains Mono',monospace">Cosine similarity = (A · B) / (|A| × |B|) → measures the angle between two vectors</p>
+  </div>
+</div>
+
+<!-- DATA FLOW TRACE -->
+<div class="section animate delay-4">
+  <div class="section-title">🧪 Live Data Trace — End to End</div>
+  <p style="color:var(--muted);margin-bottom:24px;font-size:14px">Tracing the exact data for the query <strong style="color:var(--text)">"Who created Python and when?"</strong> through all 9 steps.</p>
+  <div class="trace-box">
+    <div class="trace-header"><span style="font-size:20px">📡</span><h3>Real Input → Real Output at Each Step</h3></div>
+    <div class="trace-steps">
+      <div class="trace-step"><div class="trace-num" style="color:var(--c1)">1</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c1)">Load</div><div class="trace-value">INPUT: "sample.txt" → Document(page_content="Python created by Guido van Rossum in 1991...")</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c2)">2</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c2)">Split</div><div class="trace-value">Chunk: "Python is a programming language created by Guido van Rossum in 1991."</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c3)">3</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c3)">Embed</div><div class="trace-value">Vector: [0.0123, -0.0987, 0.0456, ...] (1536 floats)</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c4)">4</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c4)">Store</div><div class="trace-value">FAISS index with 3 vectors, each linked to original chunk</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c5)">5</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c5)">Retrieve</div><div class="trace-value">Query embedded → similarity 0.94 → returns Chunk1</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c6)">6</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c6)">Context</div><div class="trace-value">"Python is a programming language created by Guido van Rossum in 1991."</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c7)">7</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c7)">Prompt</div><div class="trace-value">"Answer from context. Context: ... Question: Who created Python? Answer:"</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c8)">8</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c8)">Generate</div><div class="trace-value">AIMessage(content="Guido van Rossum created Python in 1991.")</div></div></div>
+      <div class="trace-step"><div class="trace-num" style="color:var(--c9)">9</div><div class="trace-content"><div class="trace-step-label" style="color:var(--c9)">Parse</div><div class="trace-value">"Guido van Rossum created Python in 1991." ✅ delivered to user</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  RAG Complete Guide · Retrieval-Augmented Generation · 9 Steps · Click any cyan chip to expand component details
+</div>
+
+<script>
+  function toggleExpand(id) {
+    const element = document.getElementById(id);
+    if (element.classList.contains('open')) {
+      element.classList.remove('open');
+    } else {
+      element.classList.add('open');
+    }
+  }
+</script>
+</body>
+</html>
